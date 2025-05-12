@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target.classList.contains('edit')) {
             const row = target.closest('tr');
             const id = row.getAttribute('data-id');
-            alert(`Editar fornecedor com ID: ${id}`);
+            alert(`Editar  parceiro com ID: ${id}`);
         }
     });
 });
