@@ -23,9 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${data.nome}</td>
             <td>${data.email}</td>
             <td>${data.telefone}</td>
-         
-            <td>${data.endereco}</td>
-            <td>${data.curso}</td>
+           <td>${data.endereco}</td>
             <td><img src="${URL.createObjectURL(document.getElementById('imagem').files[0])}" alt="Foto" height="50"></td>
             <td class="actions">
                 <button class="edit">Editar</button>
@@ -47,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target.classList.contains('edit')) {
             const row = target.closest('tr');
             const id = row.getAttribute('data-id');
-            alert(`Editar  parceiro com ID: ${id}`);
+            alert(`Editar parceiros com ID: ${id}`);
         }
     });
 });
