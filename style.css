@@ -82,11 +82,6 @@ table tr:nth-child(even) {
     cursor: pointer;
 }
 
-.actions .edit {
-    background-color: #4CAF50;
-    color: white;
-}
-
 .actions .delete {
     background-color: #f44336;
     color: white;
