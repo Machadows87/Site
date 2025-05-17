@@ -1,123 +1,101 @@
-// Inicialização do Supabase
-const SUPABASE_URL = 'https://jpylyvstgewqndjmasqm.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg';
+document.addEventListener('DOMContentLoaded', () => {
+  // Inicialize o Supabase APÓS o DOM e a lib serem carregados
+  const SUPABASE_URL = 'https://jpylyvstgewqndjmasqm.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg';
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Seleciona o formulário e a tabela
-const form = document.getElementById('register-form');
-const tableBody = document.querySelector('#students-table tbody');
+  const form = document.getElementById('register-form');
+  const tableBody = document.querySelector('#students-table tbody');
 
-// Evento de envio do formulário
-form.addEventListener('submit', async (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    // Coleta os dados do formulário
     const formData = new FormData(form);
     const parceiro = Object.fromEntries(formData.entries());
 
     try {
-        // Upload da imagem, se houver
-        let imagemURL = '';
-        const imagemFile = formData.get('imagem');
-        if (imagemFile && imagemFile.size > 0) {
-            const { data, error } = await supabase.storage
-                .from('parceiros')
-                .upload(`imagens/${Date.now()}_${imagemFile.name}`, imagemFile);
+      // Upload da imagem se existir
+      let imagemURL = '';
+      const imagemFile = formData.get('imagem');
 
-            if (error) {
-                throw error;
-            }
+      if (imagemFile && imagemFile.size > 0) {
+        const fileName = `imagens/${Date.now()}_${imagemFile.name}`;
 
-            // URL pública da imagem
-            const { publicURL } = supabase.storage
-                .from('parceiros')
-                .getPublicUrl(data.path);
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('parceiros')
+          .upload(fileName, imagemFile);
 
-            imagemURL = publicURL;
-        }
+        if (uploadError) throw uploadError;
 
-        // Inserir parceiro no banco
-        const { data, error } = await supabase
-            .from('parceiros')
-            .insert([{ ...parceiro, imagem: imagemURL }]);
+        const { publicURL } = supabase.storage.from('parceiros').getPublicUrl(uploadData.path);
 
-        if (error) {
-            throw error;
-        }
+        imagemURL = publicURL;
+      }
 
-        alert('Parceiro adicionado com sucesso!');
-        appendToTable(data[0]); // Adiciona o parceiro à tabela
-        form.reset(); // Limpa o formulário
+      // Inserir parceiro no banco
+      const { data, error } = await supabase
+        .from('parceiros')
+        .insert([{ ...parceiro, imagem: imagemURL }]);
+
+      if (error) throw error;
+
+      alert('Parceiro adicionado com sucesso!');
+      appendToTable(data[0]);
+      form.reset();
     } catch (error) {
-        alert(`Erro: ${error.message}`);
+      alert(`Erro: ${error.message}`);
     }
-});
+  });
 
-// Carregar a lista de parceiros ao carregar a página
-async function fetchParceiros() {
+  async function fetchParceiros() {
     try {
-        const { data, error } = await supabase
-            .from('parceiros')
-            .select('*');
-
-        if (error) {
-            throw error;
-        }
-
-        // Adiciona cada parceiro à tabela
-        data.forEach(appendToTable);
+      const { data, error } = await supabase.from('parceiros').select('*');
+      if (error) throw error;
+      data.forEach(appendToTable);
     } catch (error) {
-        alert(`Erro: ${error.message}`);
+      alert(`Erro: ${error.message}`);
     }
-}
+  }
 
-// Adiciona uma linha à tabela
-function appendToTable(parceiro) {
+  function appendToTable(parceiro) {
     const row = document.createElement('tr');
     row.setAttribute('data-id', parceiro.id);
     row.innerHTML = `
-        <td>${parceiro.id}</td>
-        <td>${parceiro.nome}</td>
-        <td>${parceiro.email}</td>
-        <td>${parceiro.telefone}</td>
-        <td>${parceiro.endereco}</td>
-        <td><img src="${parceiro.imagem}" alt="Foto" height="50"></td>
-        <td class="actions">
-            <button class="delete">Excluir</button>
-        </td>
+      <td>${parceiro.id}</td>
+      <td>${parceiro.nome}</td>
+      <td>${parceiro.email}</td>
+      <td>${parceiro.telefone}</td>
+      <td>${parceiro.endereco}</td>
+      <td><img src="${parceiro.imagem}" alt="Foto" height="50"/></td>
+      <td>${parceiro.curso || parceiro.cnpj || ''}</td>
+      <td class="actions">
+        <button class="delete">Excluir</button>
+      </td>
     `;
-
     tableBody.appendChild(row);
-}
+  }
 
-// Excluir um parceiro
-tableBody.addEventListener('click', async (event) => {
-    if (!event.target.classList.contains('delete')) {
-        return;
-    }
+  // Evento para excluir parceiro
+  tableBody.addEventListener('click', async (event) => {
+    if (!event.target.classList.contains('delete')) return;
 
     const row = event.target.closest('tr');
     const parceiroId = row.getAttribute('data-id');
 
     if (confirm('Tem certeza de que deseja excluir este parceiro?')) {
-        try {
-            const { error } = await supabase
-                .from('parceiros')
-                .delete()
-                .eq('id', parceiroId);
+      try {
+        const { error } = await supabase.from('parceiros').delete().eq('id', parceiroId);
+        if (error) throw error;
 
-            if (error) {
-                throw error;
-            }
-
-            row.remove(); // Remove a linha da tabela
-            alert('Parceiro excluído com sucesso!');
-        } catch (error) {
-            alert(`Erro: ${error.message}`);
-        }
+        row.remove();
+        alert('Parceiro excluído com sucesso!');
+      } catch (error) {
+        alert(`Erro: ${error.message}`);
+      }
     }
-});
+  });
 
-// Carrega a lista de parceiros ao iniciar
-fetchParceiros();
+  // Carrega a lista ao iniciar
+  fetchParceiros();
+});
