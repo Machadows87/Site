@@ -1,0 +1,14 @@
+{
+  "name": "sistema-parceiros",
+  "version": "1.0.0",
+  "description": "Sistema de Registro de Parceiros com Supabase e Netlify Functions",
+  "main": "netlify-functions/createPartner.js",
+  "scripts": {
+    "start": "netlify dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "parse-multipart": "^1.0.1",
+    "buffer": "^6.0.3"
+  }
+}
