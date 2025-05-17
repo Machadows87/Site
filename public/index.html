@@ -50,6 +50,7 @@
             <th>Endereço</th>
             <th>CNPJ</th>
             <th>Foto</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -59,109 +60,6 @@
     </section>
   </main>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-    const SUPABASE_URL = 'https://jpylyvstgewqndjmasqm.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg';
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const form = document.getElementById('register-form');
-    const tableBody = document.querySelector('#partners-table tbody');
-
-    async function loadPartners() {
-      const { data, error } = await supabase
-        .from('parceiros')
-        .select('*')
-        .order('id', { ascending: false });
-
-      if (error) {
-        console.error('Erro ao carregar parceiros:', error);
-        return;
-      }
-
-      tableBody.innerHTML = '';
-
-      data.forEach(p => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${p.id}</td>
-          <td>${p.nome}</td>
-          <td>${p.email}</td>
-          <td>${p.telefone}</td>
-          <td>${p.endereco}</td>
-          <td>${p.cnpj}</td>
-          <td><img src="${p.imagem_url}" height="50" alt="Foto"></td>
-        `;
-        tableBody.appendChild(row);
-      });
-    }
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-
-      const nome = form.nome.value.trim();
-      const email = form.email.value.trim();
-      const telefone = form.telefone.value.trim();
-      const endereco = form.endereco.value.trim();
-      const cnpj = form.cnpj.value.trim();
-      const imagemFile = form.imagem.files[0];
-
-      if (!imagemFile) {
-        alert('Por favor, selecione uma foto.');
-        return;
-      }
-
-      // Upload da imagem para Supabase Storage
-      const fileExt = imagemFile.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `public/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('imagens')
-        .upload(filePath, imagemFile);
-
-      if (uploadError) {
-        alert('Erro ao enviar a imagem: ' + uploadError.message);
-        return;
-      }
-
-      // Obter URL pública da imagem
-      const { publicURL, error: urlError } = supabase.storage
-        .from('imagens')
-        .getPublicUrl(filePath);
-
-      if (urlError) {
-        alert('Erro ao obter URL da imagem: ' + urlError.message);
-        return;
-      }
-
-      // Inserir dados no banco
-      const { error: insertError } = await supabase
-        .from('parceiros')
-        .insert([
-          {
-            nome,
-            email,
-            telefone,
-            endereco,
-            cnpj,
-            imagem_url: publicURL
-          }
-        ]);
-
-      if (insertError) {
-        alert('Erro ao cadastrar parceiro: ' + insertError.message);
-        return;
-      }
-
-      alert('Parceiro cadastrado com sucesso!');
-      form.reset();
-      loadPartners();
-    });
-
-    loadPartners();
-  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
