@@ -1,51 +1,16 @@
+// Configurar o Supabase
 const SUPABASE_URL = 'https://jpylyvstgewqndjmasqm.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg';
 
-// IMPORTANTE: 'Supabase' com S maiúsculo
-const supabase = supabase.createClient('https://jpylyvstgewqndjmasqm.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg');
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const form = document.getElementById('register-form');
-const tableBody = document.querySelector('#students-table tbody');
+const tableBody = document.querySelector('#partners-table tbody');
 
-form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-
-  const formData = new FormData(form);
-  const parceiro = Object.fromEntries(formData.entries());
-
-  try {
-    // Inserir parceiro no banco, imagem null pois não tem campo imagem
-    const { data, error } = await supabase
-      .from('parceiros')
-      .insert([{ ...parceiro, imagem: null }]);
-
-    if (error) throw error;
-
-    alert('Parceiro adicionado com sucesso!');
-    appendToTable(data[0]);
-    form.reset();
-  } catch (error) {
-    alert(`Erro: ${error.message}`);
-  }
-});
-
-async function fetchParceiros() {
-  try {
-    const { data, error } = await supabase
-      .from('parceiros')
-      .select('*');
-
-    if (error) throw error;
-
-    data.forEach(appendToTable);
-  } catch (error) {
-    alert(`Erro: ${error.message}`);
-  }
-}
-
+// Função para mostrar parceiros na tabela
 function appendToTable(parceiro) {
   const row = document.createElement('tr');
-  row.setAttribute('data-id', parceiro.id);
+  row.dataset.id = parceiro.id;
   row.innerHTML = `
     <td>${parceiro.id}</td>
     <td>${parceiro.nome}</td>
@@ -60,27 +25,60 @@ function appendToTable(parceiro) {
   tableBody.appendChild(row);
 }
 
-tableBody.addEventListener('click', async (event) => {
-  if (!event.target.classList.contains('delete')) return;
+// Buscar parceiros do banco e preencher a tabela
+async function fetchParceiros() {
+  tableBody.innerHTML = ''; // limpa a tabela antes
+  const { data, error } = await supabase.from('parceiros').select('*');
+  if (error) {
+    alert('Erro ao carregar parceiros: ' + error.message);
+    return;
+  }
+  data.forEach(appendToTable);
+}
 
-  const row = event.target.closest('tr');
-  const parceiroId = row.getAttribute('data-id');
+// Cadastrar parceiro
+form.addEventListener('submit', async e => {
+  e.preventDefault();
 
-  if (confirm('Tem certeza de que deseja excluir este parceiro?')) {
-    try {
-      const { error } = await supabase
-        .from('parceiros')
-        .delete()
-        .eq('id', parceiroId);
+  const formData = new FormData(form);
+  const parceiro = Object.fromEntries(formData.entries());
 
-      if (error) throw error;
+  try {
+    const { data, error } = await supabase
+      .from('parceiros')
+      .insert([{ ...parceiro }]);
 
+    if (error) throw error;
+
+    alert('Parceiro cadastrado com sucesso!');
+    appendToTable(data[0]);
+    form.reset();
+  } catch (error) {
+    alert('Erro ao cadastrar parceiro: ' + error.message);
+  }
+});
+
+// Excluir parceiro
+tableBody.addEventListener('click', async (e) => {
+  if (!e.target.classList.contains('delete')) return;
+
+  const row = e.target.closest('tr');
+  const id = row.dataset.id;
+
+  if (confirm('Tem certeza que deseja excluir este parceiro?')) {
+    const { error } = await supabase
+      .from('parceiros')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      alert('Erro ao excluir parceiro: ' + error.message);
+    } else {
       row.remove();
       alert('Parceiro excluído com sucesso!');
-    } catch (error) {
-      alert(`Erro: ${error.message}`);
     }
   }
 });
 
+// Carregar parceiros ao abrir página
 fetchParceiros();
