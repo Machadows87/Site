@@ -1,69 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sistema de Registro de Parceiros</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sistema de Registro de Parceiros</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="header">
-    <img src="logo4.png" alt="Logo" class="logo" />
-    <h1>Sistema de Registro de Parceiros</h1>
-  </header>
+    <header class="header">
+        <img src="logo4.png" alt="Logo" class="logo" />
+        <h1>Sistema de Registro de Parceiros</h1>
+    </header>
 
-  <main class="container">
-    <section class="form-section">
-      <h2>Cadastro de Parceiros</h2>
-      <form id="register-form">
-        <label for="nome">Nome *</label>
-        <input type="text" id="nome" name="nome" required />
+    <main class="container">
+        <section class="form-section">
+            <h2>Cadastro de Parceiros</h2>
+            <form id="register-form">
+                <label for="nome">Nome *</label>
+                <input type="text" id="nome" name="nome" required />
 
-        <label for="email">Email *</label>
-        <input type="email" id="email" name="email" required />
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required />
 
-        <label for="telefone">Telefone *</label>
-        <input type="text" id="telefone" name="telefone" required />
+                <label for="telefone">Telefone *</label>
+                <input type="text" id="telefone" name="telefone" required />
 
-        <label for="endereco">Endereço *</label>
-        <input type="text" id="endereco" name="endereco" required />
+                <label for="endereco">Endereço *</label>
+                <input type="text" id="endereco" name="endereco" required />
 
-        <label for="curso">CNPJ *</label>
-        <input type="text" id="curso" name="curso" required />
+                <label for="curso">CNPJ *</label>
+                <input type="text" id="curso" name="curso" required />
 
-        <label for="imagem">Foto *</label>
-        <input type="file" id="imagem" name="imagem" accept="image/*" />
+                <label for="imagem">Foto *</label>
+                <input type="file" id="imagem" name="imagem" accept="image/*" required />
 
-        <button type="submit" id="add-button">Adicionar</button>
-      </form>
-    </section>
+                <button type="submit" id="add-button">Adicionar</button>
+            </form>
+        </section>
 
-    <section class="table-section">
-      <h2>Lista de Parceiros</h2>
-      <table id="students-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Telefone</th>
-            <th>Endereço</th>
-            <th>Foto</th>
-            <th>CNPJ</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Dados carregados via JavaScript -->
-        </tbody>
-      </table>
-    </section>
-  </main>
+        <section class="table-section">
+            <h2>Lista de Parceiros</h2>
+            <table id="students-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Telefone</th>
+                        <th>Endereço</th>
+                        <th>CNPJ</th>
+                        <th>Foto</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados carregados via JS -->
+                </tbody>
+            </table>
+        </section>
+    </main>
 
-  <!-- Importa a biblioteca Supabase primeiro -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
-  <!-- Seu script personalizado depois -->
-  <script src="script.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Seu script JS -->
+    <script src="script.js" defer></script>
 </body>
 </html>
