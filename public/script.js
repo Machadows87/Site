@@ -1,4 +1,4 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const SUPABASE_URL = 'https://jpylyvstgewqndjmasqm.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg';
@@ -22,7 +22,7 @@ async function loadPartners() {
   tableBody.innerHTML = '';
 
   data.forEach(p => {
-    const imgSrc = p.imagem_url || 'sem-foto.png'; 
+    const imgSrc = p.imagem_url || 'sem-foto.png';
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${p.id}</td>
@@ -32,9 +32,18 @@ async function loadPartners() {
       <td>${p.endereco}</td>
       <td>${p.cnpj}</td>
       <td><img src="${imgSrc}" height="50" alt="Foto"></td>
-      <td><button data-id="${p.id}" data-imgurl="${p.imagem_url}" class="delete-btn">Excluir</button></td>
+      <td><button data-id="${p.id}" data-image="${p.imagem_url || ''}" class="delete-btn">Excluir</button></td>
     `;
     tableBody.appendChild(row);
+  });
+
+  // Adiciona evento de click em todos os botões delete criados
+  document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+      const id = button.getAttribute('data-id');
+      const imageUrl = button.getAttribute('data-image');
+      await deletePartner(id, imageUrl);
+    });
   });
 }
 
@@ -53,7 +62,6 @@ form.addEventListener('submit', async (event) => {
     return;
   }
 
-  // Upload da imagem para Supabase Storage
   const fileExt = imagemFile.name.split('.').pop();
   const fileName = `${Date.now()}.${fileExt}`;
   const filePath = `public/${fileName}`;
@@ -67,7 +75,6 @@ form.addEventListener('submit', async (event) => {
     return;
   }
 
-  // Obter URL pública da imagem
   const { publicURL, error: urlError } = supabase.storage
     .from('imagens')
     .getPublicUrl(filePath);
@@ -77,7 +84,6 @@ form.addEventListener('submit', async (event) => {
     return;
   }
 
-  // Inserir dados no banco
   const { error: insertError } = await supabase
     .from('parceiros')
     .insert([
@@ -101,7 +107,6 @@ form.addEventListener('submit', async (event) => {
   loadPartners();
 });
 
-// Função para deletar parceiro e imagem
 async function deletePartner(id, imageUrl) {
   if (!confirm('Tem certeza que deseja excluir este parceiro?')) return;
 
@@ -120,18 +125,19 @@ async function deletePartner(id, imageUrl) {
     // Deletar imagem do storage, extraindo o path da URL pública
     if (imageUrl) {
       const bucket = 'imagens';
-
-      // A URL pública tem o formato:
-      // https://{SUPABASE_URL}/storage/v1/object/public/imagens/{filePath}
-      // Então para remover precisamos extrair só a parte após /imagens/
-      const url = new URL(imageUrl);
-      const pathIndex = url.pathname.indexOf('/public/' + bucket + '/');
       let filePath = null;
-      if (pathIndex !== -1) {
-        filePath = url.pathname.substring(pathIndex + (`/public/${bucket}/`).length);
-      } else {
-        // Caso não ache, tenta extrair o arquivo após bucket
-        filePath = imageUrl.split(`${bucket}/`)[1];
+
+      try {
+        const url = new URL(imageUrl);
+        const bucketPrefix = `/storage/v1/object/public/${bucket}/`;
+        const index = url.pathname.indexOf(bucketPrefix);
+        if (index !== -1) {
+          filePath = url.pathname.substring(index + bucketPrefix.length);
+        }
+      } catch {
+        if (imageUrl.includes(`${bucket}/`)) {
+          filePath = imageUrl.split(`${bucket}/`)[1];
+        }
       }
 
       if (filePath) {
@@ -151,14 +157,5 @@ async function deletePartner(id, imageUrl) {
     alert('Erro ao deletar parceiro: ' + err.message);
   }
 }
-
-// Delegar evento click para os botões delete da tabela
-tableBody.addEventListener('click', (event) => {
-  if (event.target.classList.contains('delete-btn')) {
-    const partnerId = event.target.getAttribute('data-id');
-    const imgUrl = event.target.getAttribute('data-imgurl');
-    deletePartner(Number(partnerId), imgUrl);
-  }
-});
 
 loadPartners();
