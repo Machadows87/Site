@@ -1,45 +1,84 @@
-const { createClient } = require('@supabase/supabase-js');
+const SUPABASE_URL = 'https://jpylyvstgewqndjmasqm.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg';
 
-// Conectar ao Supabase
-const supabaseUrl = 'https://jpylyvstgewqndjmasqm.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg';
-const supabase = createClient('https://jpylyvstgewqndjmasqm.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg');
+// Inicializando o cliente Supabase corretamente
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Rotas
-const express = require('express');
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const form = document.getElementById('register-form');
+const tableBody = document.querySelector('#students-table tbody');
 
-// Adicionar um parceiro
-app.post('/parceiros', async (req, res) => {
-    const { nome, email, telefone, endereco, imagem } = req.body;
+// Função para adicionar um parceiro na tabela
+function appendToTable(parceiro) {
+  const row = document.createElement('tr');
+  row.dataset.id = parceiro.id;
+  row.innerHTML = `
+    <td>${parceiro.id}</td>
+    <td>${parceiro.nome}</td>
+    <td>${parceiro.email}</td>
+    <td>${parceiro.telefone}</td>
+    <td>${parceiro.endereco}</td>
+    <td>${parceiro.cnpj}</td>
+    <td class="actions">
+      <button class="delete">Excluir</button>
+    </td>
+  `;
+  tableBody.appendChild(row);
+}
 
+// Função para buscar parceiros do banco de dados
+async function fetchParceiros() {
+  tableBody.innerHTML = '';
+  const { data, error } = await supabase.from('parceiros').select('*');
+  if (error) {
+    alert('Erro ao carregar parceiros: ' + error.message);
+    return;
+  }
+  data.forEach(appendToTable);
+}
+
+// Evento para o formulário de cadastro de parceiros
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const formData = new FormData(form);
+  const parceiro = Object.fromEntries(formData.entries());
+
+  try {
     const { data, error } = await supabase
-        .from('parceiros')
-        .insert([{ nome, email, telefone, endereco, imagem }]);
+      .from('parceiros')
+      .insert([{ ...parceiro }]);
+
+    if (error) throw error;
+
+    alert('Parceiro cadastrado com sucesso!');
+    appendToTable(data[0]);
+    form.reset();
+  } catch (error) {
+    alert('Erro ao cadastrar parceiro: ' + error.message);
+  }
+});
+
+// Evento para deletar parceiros
+tableBody.addEventListener('click', async (e) => {
+  if (!e.target.classList.contains('delete')) return;
+
+  const row = e.target.closest('tr');
+  const id = row.dataset.id;
+
+  if (confirm('Tem certeza que deseja excluir este parceiro?')) {
+    const { error } = await supabase
+      .from('parceiros')
+      .delete()
+      .eq('id', id);
 
     if (error) {
-        return res.status(400).json({ error: error.message });
+      alert('Erro ao excluir parceiro: ' + error.message);
+    } else {
+      row.remove();
+      alert('Parceiro excluído com sucesso!');
     }
-
-    res.status(201).json(data);
+  }
 });
 
-// Listar todos os parceiros
-app.get('/parceiros', async (req, res) => {
-    const { data, error } = await supabase
-        .from('parceiros')
-        .select('*');
-
-    if (error) {
-        return res.status(400).json({ error: error.message });
-    }
-
-    res.status(200).json(data);
-});
-
-// Subir o servidor
-app.listen(3000, () => {
-    console.log('Servidor rodando na porta 3000');
-});
+// Carregar parceiros ao iniciar
+fetchParceiros();
