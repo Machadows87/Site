@@ -37,7 +37,7 @@ async function fetchParceiros() {
 }
 
 // Evento para o formulário de cadastro de parceiros
-form.addEventListener('submit', async e => {
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const formData = new FormData(form);
