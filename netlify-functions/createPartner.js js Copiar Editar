@@ -1,0 +1,82 @@
+import { createClient } from '@supabase/supabase-js';
+import multipart from 'parse-multipart';
+import { Buffer } from 'buffer';
+
+export const handler = async (event, context) => {
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: 'Method Not Allowed',
+    };
+  }
+
+  try {
+    const contentType = event.headers['content-type'] || event.headers['Content-Type'];
+    const boundary = multipart.getBoundary(contentType);
+    const bodyBuffer = Buffer.from(event.body, 'base64');
+    const parts = multipart.Parse(bodyBuffer, boundary);
+
+    let fields = {};
+    let file = null;
+
+    parts.forEach(part => {
+      if (part.filename) {
+        file = part;
+      } else {
+        fields[part.name] = part.data.toString('utf8');
+      }
+    });
+
+    if (!file) {
+      return { statusCode: 400, body: JSON.stringify({ error: 'Imagem é obrigatória' }) };
+    }
+
+    const fileExt = file.filename.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `parceiros/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('parceiros')
+      .upload(filePath, file.data, { contentType: file.type });
+
+    if (uploadError) {
+      return { statusCode: 500, body: JSON.stringify({ error: uploadError.message }) };
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('parceiros')
+      .getPublicUrl(filePath);
+
+    const { data, error } = await supabase
+      .from('parceiros')
+      .insert({
+        nome: fields.nome,
+        email: fields.email,
+        telefone: fields.telefone,
+        endereco: fields.endereco,
+        cnpj: fields.cnpj,
+        imagem_url: publicUrlData.publicUrl,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
+    }
+
+    return {
+      statusCode: 201,
+      body: JSON.stringify(data),
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
