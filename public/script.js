@@ -31,20 +31,52 @@ async function loadPartners() {
       <td>${p.telefone}</td>
       <td>${p.endereco}</td>
       <td>${p.cnpj}</td>
-      <td><img src="${imgSrc}" height="50" alt="Foto"></td>
-      <td><button data-id="${p.id}" data-image="${p.imagem_url || ''}" class="delete-btn">Excluir</button></td>
+      <td><img src="${imgSrc}" height="50" alt="Foto do parceiro"></td>
+      <td><button class="delete-btn" data-id="${p.id}" data-image-url="${p.imagem_url}">Excluir</button></td>
     `;
     tableBody.appendChild(row);
   });
 
-  // Adiciona evento de click em todos os botões delete criados
+  // Adiciona eventos de delete aos botões
   document.querySelectorAll('.delete-btn').forEach(button => {
     button.addEventListener('click', async () => {
       const id = button.getAttribute('data-id');
-      const imageUrl = button.getAttribute('data-image');
-      await deletePartner(id, imageUrl);
+      const imageUrl = button.getAttribute('data-image-url');
+      if (confirm('Deseja realmente deletar esse parceiro?')) {
+        await deletePartner(id, imageUrl);
+      }
     });
   });
+}
+
+async function deletePartner(id, imageUrl) {
+  // Extrai o caminho do arquivo no storage a partir da URL pública
+  const url = new URL(imageUrl);
+  const path = url.pathname.replace('/storage/v1/object/public/', '');
+
+  // Deleta a imagem do storage
+  const { error: deleteImageError } = await supabase.storage
+    .from('imagens')
+    .remove([path]);
+
+  if (deleteImageError) {
+    alert('Erro ao deletar imagem: ' + deleteImageError.message);
+    return;
+  }
+
+  // Deleta o registro do parceiro no banco
+  const { error: deletePartnerError } = await supabase
+    .from('parceiros')
+    .delete()
+    .eq('id', id);
+
+  if (deletePartnerError) {
+    alert('Erro ao deletar parceiro: ' + deletePartnerError.message);
+    return;
+  }
+
+  alert('Parceiro deletado com sucesso!');
+  loadPartners();
 }
 
 form.addEventListener('submit', async (event) => {
@@ -75,7 +107,7 @@ form.addEventListener('submit', async (event) => {
     return;
   }
 
-  const { publicURL, error: urlError } = supabase.storage
+  const { data, error: urlError } = supabase.storage
     .from('imagens')
     .getPublicUrl(filePath);
 
@@ -84,18 +116,18 @@ form.addEventListener('submit', async (event) => {
     return;
   }
 
+  const publicURL = data.publicUrl;
+
   const { error: insertError } = await supabase
     .from('parceiros')
-    .insert([
-      {
-        nome,
-        email,
-        telefone,
-        endereco,
-        cnpj,
-        imagem_url: publicURL
-      }
-    ]);
+    .insert([{
+      nome,
+      email,
+      telefone,
+      endereco,
+      cnpj,
+      imagem_url: publicURL
+    }]);
 
   if (insertError) {
     alert('Erro ao cadastrar parceiro: ' + insertError.message);
@@ -106,56 +138,5 @@ form.addEventListener('submit', async (event) => {
   form.reset();
   loadPartners();
 });
-
-async function deletePartner(id, imageUrl) {
-  if (!confirm('Tem certeza que deseja excluir este parceiro?')) return;
-
-  try {
-    // Deletar registro da tabela 'parceiros'
-    const { error: deleteError } = await supabase
-      .from('parceiros')
-      .delete()
-      .eq('id', id);
-
-    if (deleteError) {
-      alert('Erro ao deletar parceiro: ' + deleteError.message);
-      return;
-    }
-
-    // Deletar imagem do storage, extraindo o path da URL pública
-    if (imageUrl) {
-      const bucket = 'imagens';
-      let filePath = null;
-
-      try {
-        const url = new URL(imageUrl);
-        const bucketPrefix = `/storage/v1/object/public/${bucket}/`;
-        const index = url.pathname.indexOf(bucketPrefix);
-        if (index !== -1) {
-          filePath = url.pathname.substring(index + bucketPrefix.length);
-        }
-      } catch {
-        if (imageUrl.includes(`${bucket}/`)) {
-          filePath = imageUrl.split(`${bucket}/`)[1];
-        }
-      }
-
-      if (filePath) {
-        const { error: storageError } = await supabase.storage
-          .from(bucket)
-          .remove([filePath]);
-
-        if (storageError) {
-          console.warn('Erro ao deletar imagem no storage:', storageError.message);
-        }
-      }
-    }
-
-    alert('Parceiro deletado com sucesso!');
-    loadPartners();
-  } catch (err) {
-    alert('Erro ao deletar parceiro: ' + err.message);
-  }
-}
 
 loadPartners();
