@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Registro de Parceiros</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
 </head>
 <body>
     <header class="header">
         <img src="logo4.png" alt="Logo" class="logo">
         <h1>Sistema de Registro de Parceiros</h1>
     </header>
-    
+
     <main class="container">
         <section class="form-section">
             <h2>Cadastro de Parceiros</h2>
@@ -29,11 +28,12 @@
                 <label for="endereco">Endereço *</label>
                 <input type="text" id="endereco" name="endereco" required>
                 
-                <label for="curso">CNPJ *</label>
+              <label for="curso">CNPJ *</label>
                 <input type="text" id="curso" name="curso" required>
-                
+
                 <label for="imagem">Foto *</label>
                 <input type="file" id="imagem" name="imagem" accept="image/*">
+
                 
                 <button type="submit" id="add-button">Adicionar</button>
             </form>
@@ -50,6 +50,7 @@
                         <th>Telefone</th>
                         <th>Endereço</th>
                         <th>Foto</th>
+                        <th>CNPJ</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -59,5 +60,11 @@
             </table>
         </section>
     </main>
+
+    <!-- Adicione o script do Supabase aqui -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <!-- Adicione o seu script personalizado -->
+    <script src="script.js" defer></script>
 </body>
 </html>
