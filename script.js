@@ -1,15 +1,13 @@
-// Configurar o Supabase
 const SUPABASE_URL = 'https://jpylyvstgewqndjmasqm.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg';
 
-// Note o S maiúsculo em Supabase, e a variável supabase (minúsculo)
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// O resto do código usa a variável supabase normalmente:
+// Inicializando o cliente Supabase corretamente
+const supabase = supabase.createClient(https://jpylyvstgewqndjmasqm.supabase.co, eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg);
 
 const form = document.getElementById('register-form');
-const tableBody = document.querySelector('#partners-table tbody');
+const tableBody = document.querySelector('#students-table tbody');
 
+// Função para adicionar um parceiro na tabela
 function appendToTable(parceiro) {
   const row = document.createElement('tr');
   row.dataset.id = parceiro.id;
@@ -27,6 +25,7 @@ function appendToTable(parceiro) {
   tableBody.appendChild(row);
 }
 
+// Função para buscar parceiros do banco de dados
 async function fetchParceiros() {
   tableBody.innerHTML = '';
   const { data, error } = await supabase.from('parceiros').select('*');
@@ -37,6 +36,7 @@ async function fetchParceiros() {
   data.forEach(appendToTable);
 }
 
+// Evento para o formulário de cadastro de parceiros
 form.addEventListener('submit', async e => {
   e.preventDefault();
 
@@ -58,6 +58,7 @@ form.addEventListener('submit', async e => {
   }
 });
 
+// Evento para deletar parceiros
 tableBody.addEventListener('click', async (e) => {
   if (!e.target.classList.contains('delete')) return;
 
@@ -79,4 +80,5 @@ tableBody.addEventListener('click', async (e) => {
   }
 });
 
+// Carregar parceiros ao iniciar
 fetchParceiros();
