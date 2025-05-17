@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Inicialize o Supabase APÓS o DOM e a lib serem carregados
   const SUPABASE_URL = 'https://jpylyvstgewqndjmasqm.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg';
+  const SUPABASE_ANON_KEY = 'sua-chave-anon-aqui';
 
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const form = document.getElementById('register-form');
   const tableBody = document.querySelector('#students-table tbody');
@@ -15,26 +14,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const parceiro = Object.fromEntries(formData.entries());
 
     try {
-      // Upload da imagem se existir
       let imagemURL = '';
       const imagemFile = formData.get('imagem');
 
       if (imagemFile && imagemFile.size > 0) {
         const fileName = `imagens/${Date.now()}_${imagemFile.name}`;
 
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await supabaseClient.storage
           .from('parceiros')
           .upload(fileName, imagemFile);
 
         if (uploadError) throw uploadError;
 
-        const { publicURL } = supabase.storage.from('parceiros').getPublicUrl(uploadData.path);
+        const { publicURL } = supabaseClient.storage.from('parceiros').getPublicUrl(uploadData.path);
 
         imagemURL = publicURL;
       }
 
-      // Inserir parceiro no banco
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('parceiros')
         .insert([{ ...parceiro, imagem: imagemURL }]);
 
@@ -50,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function fetchParceiros() {
     try {
-      const { data, error } = await supabase.from('parceiros').select('*');
+      const { data, error } = await supabaseClient.from('parceiros').select('*');
       if (error) throw error;
       data.forEach(appendToTable);
     } catch (error) {
@@ -76,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
     tableBody.appendChild(row);
   }
 
-  // Evento para excluir parceiro
   tableBody.addEventListener('click', async (event) => {
     if (!event.target.classList.contains('delete')) return;
 
@@ -85,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (confirm('Tem certeza de que deseja excluir este parceiro?')) {
       try {
-        const { error } = await supabase.from('parceiros').delete().eq('id', parceiroId);
+        const { error } = await supabaseClient.from('parceiros').delete().eq('id', parceiroId);
         if (error) throw error;
 
         row.remove();
@@ -96,6 +92,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Carrega a lista ao iniciar
   fetchParceiros();
 });
