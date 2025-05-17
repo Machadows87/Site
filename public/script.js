@@ -3,9 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const tableBody = document.querySelector('#partners-table tbody');
 
   const SUPABASE_URL = 'https://jpylyvstgewqndjmasqm.supabase.co';
-  const SUPABASE_ANON_KEY = '<eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg>';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg';
 
-  // Use uma variável diferente para o cliente Supabase, para não confundir com o objeto global
+  // Cria cliente Supabase
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   async function loadPartners() {
@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tableBody.innerHTML = '';
 
     data.forEach(p => {
+      const imgSrc = p.imagem_url ? p.imagem_url : 'sem-foto.png'; // Coloque uma imagem default ou deixe vazio
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${p.id}</td>
@@ -30,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${p.telefone}</td>
         <td>${p.endereco}</td>
         <td>${p.cnpj}</td>
-        <td><img src="${p.imagem_url}" height="50" alt="Foto"></td>
+        <td><img src="${imgSrc}" height="50" alt="Foto"></td>
       `;
       tableBody.appendChild(row);
     });
@@ -61,6 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Carrega os parceiros quando a página abrir
+  // Carrega os parceiros ao abrir a página
   loadPartners();
 });
