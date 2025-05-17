@@ -17,7 +17,7 @@ function appendToTable(parceiro) {
     <td>${parceiro.email}</td>
     <td>${parceiro.telefone}</td>
     <td>${parceiro.endereco}</td>
-    <td>${parceiro.curso}</td>
+    <td>${parceiro.cnpj}</td>
     <td class="actions">
       <button class="delete">Excluir</button>
     </td>
