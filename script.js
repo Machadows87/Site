@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
   const SUPABASE_URL = 'https://jpylyvstgewqndjmasqm.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzQ2MjAyNiwiZXhwIjoyMDYzMDM4MDI2fQ.639U8BwJOgVUi8eSlmItXhFB-cM4MpueLf-hlb-lXlM';
 
 
-  const supabaseClient = supabase.createClient('https://jpylyvstgewqndjmasqm.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg');
+  const supabaseClient = supabase.createClient('https://jpylyvstgewqndjmasqm.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzQ2MjAyNiwiZXhwIjoyMDYzMDM4MDI2fQ.639U8BwJOgVUi8eSlmItXhFB-cM4MpueLf-hlb-lXlM');
 
   const form = document.getElementById('register-form');
   const tableBody = document.querySelector('#students-table tbody');
