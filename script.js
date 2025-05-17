@@ -7,100 +7,79 @@ const form = document.getElementById('register-form');
 const tableBody = document.querySelector('#students-table tbody');
 
 form.addEventListener('submit', async (event) => {
-  event.preventDefault();
+    event.preventDefault();
 
-  const formData = new FormData(form);
-  const parceiro = Object.fromEntries(formData.entries());
+    const formData = new FormData(form);
+    const parceiro = Object.fromEntries(formData.entries());
 
-  try {
-    let imagemURL = '';
+    try {
+        // Inserir parceiro no banco, sem imagem
+        const { data, error } = await supabase
+            .from('parceiros')
+            .insert([{ ...parceiro, imagem: null }]); // passando imagem null porque não tem campo mais
 
-    const imagemFile = formData.get('imagem');
-    if (imagemFile && imagemFile.size > 0) {
-      // Upload da imagem para o bucket 'parceiros'
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('parceiros')
-        .upload(`imagens/${Date.now()}_${imagemFile.name}`, imagemFile, {
-          cacheControl: '3600',
-          upsert: false,
-        });
+        if (error) throw error;
 
-      if (uploadError) throw uploadError;
-
-      // Pega a URL pública da imagem
-      const { publicURL, error: urlError } = supabase.storage
-        .from('parceiros')
-        .getPublicUrl(uploadData.path);
-
-      if (urlError) throw urlError;
-
-      imagemURL = publicURL;
+        alert('Parceiro adicionado com sucesso!');
+        appendToTable(data[0]);
+        form.reset();
+    } catch (error) {
+        alert(`Erro: ${error.message}`);
     }
-
-    // Insere o parceiro no banco
-    const { data, error } = await supabase
-      .from('parceiros')
-      .insert([{ ...parceiro, imagem: imagemURL }]);
-
-    if (error) throw error;
-
-    alert('Parceiro adicionado com sucesso!');
-    addRowToTable(data[0]);
-    form.reset();
-  } catch (error) {
-    alert(`Erro: ${error.message}`);
-  }
 });
 
 async function fetchParceiros() {
-  try {
-    const { data, error } = await supabase.from('parceiros').select('*');
+    try {
+        const { data, error } = await supabase
+            .from('parceiros')
+            .select('*');
 
-    if (error) throw error;
+        if (error) throw error;
 
-    data.forEach(addRowToTable);
-  } catch (error) {
-    alert(`Erro: ${error.message}`);
-  }
+        data.forEach(appendToTable);
+    } catch (error) {
+        alert(`Erro: ${error.message}`);
+    }
 }
 
-function addRowToTable(parceiro) {
-  const tr = document.createElement('tr');
-  tr.setAttribute('data-id', parceiro.id);
-  tr.innerHTML = `
-    <td>${parceiro.id}</td>
-    <td>${parceiro.nome}</td>
-    <td>${parceiro.email}</td>
-    <td>${parceiro.telefone}</td>
-    <td>${parceiro.endereco}</td>
-    <td>${parceiro.cnpj}</td>
-    <td><img src="${parceiro.imagem}" alt="Foto do parceiro" height="50" /></td>
-    <td><button class="btnDelete" data-id="${parceiro.id}">Excluir</button></td>
-  `;
-  tableBody.appendChild(tr);
+function appendToTable(parceiro) {
+    const row = document.createElement('tr');
+    row.setAttribute('data-id', parceiro.id);
+    row.innerHTML = `
+        <td>${parceiro.id}</td>
+        <td>${parceiro.nome}</td>
+        <td>${parceiro.email}</td>
+        <td>${parceiro.telefone}</td>
+        <td>${parceiro.endereco}</td>
+        <td>${parceiro.curso}</td>
+        <td class="actions">
+            <button class="delete">Excluir</button>
+        </td>
+    `;
+    tableBody.appendChild(row);
 }
 
-// Excluir parceiro
 tableBody.addEventListener('click', async (event) => {
-  if (!event.target.classList.contains('btnDelete')) return;
+    if (!event.target.classList.contains('delete')) return;
 
-  const id = event.target.getAttribute('data-id');
-  if (!confirm('Tem certeza que deseja excluir este parceiro?')) return;
-
-  try {
-    // Deletar do banco
-    const { error } = await supabase.from('parceiros').delete().eq('id', id);
-    if (error) throw error;
-
-    // Remover da tabela
     const row = event.target.closest('tr');
-    row.remove();
+    const parceiroId = row.getAttribute('data-id');
 
-    alert('Parceiro excluído com sucesso!');
-  } catch (error) {
-    alert(`Erro: ${error.message}`);
-  }
+    if (confirm('Tem certeza de que deseja excluir este parceiro?')) {
+        try {
+            const { error } = await supabase
+                .from('parceiros')
+                .delete()
+                .eq('id', parceiroId);
+
+            if (error) throw error;
+
+            row.remove();
+            alert('Parceiro excluído com sucesso!');
+        } catch (error) {
+            alert(`Erro: ${error.message}`);
+        }
+    }
 });
 
-// Ao carregar a página, busca os parceiros
-document.addEventListener('DOMContentLoaded', fetchParceiros);
+fetchParceiros();
