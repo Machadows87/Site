@@ -1,12 +1,10 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('register-form');
   const tableBody = document.querySelector('#partners-table tbody');
 
   const SUPABASE_URL = 'https://<YOUR_SUPABASE_PROJECT>.supabase.co';
   const SUPABASE_ANON_KEY = '<YOUR_SUPABASE_ANON_KEY>';
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   async function loadPartners() {
     const { data, error } = await supabase
