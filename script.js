@@ -2,12 +2,14 @@
 const SUPABASE_URL = 'https://jpylyvstgewqndjmasqm.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpweWx5dnN0Z2V3cW5kam1hc3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NjIwMjYsImV4cCI6MjA2MzAzODAyNn0.vP9c5I6OtEX8tyuCHSotScm03vs1O6xZGGnhFAbECKg';
 
-const Supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Note o S maiúsculo em Supabase, e a variável supabase (minúsculo)
+const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// O resto do código usa a variável supabase normalmente:
 
 const form = document.getElementById('register-form');
 const tableBody = document.querySelector('#partners-table tbody');
 
-// Função para mostrar parceiros na tabela
 function appendToTable(parceiro) {
   const row = document.createElement('tr');
   row.dataset.id = parceiro.id;
@@ -25,9 +27,8 @@ function appendToTable(parceiro) {
   tableBody.appendChild(row);
 }
 
-// Buscar parceiros do banco e preencher a tabela
 async function fetchParceiros() {
-  tableBody.innerHTML = ''; // limpa a tabela antes
+  tableBody.innerHTML = '';
   const { data, error } = await supabase.from('parceiros').select('*');
   if (error) {
     alert('Erro ao carregar parceiros: ' + error.message);
@@ -36,7 +37,6 @@ async function fetchParceiros() {
   data.forEach(appendToTable);
 }
 
-// Cadastrar parceiro
 form.addEventListener('submit', async e => {
   e.preventDefault();
 
@@ -58,7 +58,6 @@ form.addEventListener('submit', async e => {
   }
 });
 
-// Excluir parceiro
 tableBody.addEventListener('click', async (e) => {
   if (!e.target.classList.contains('delete')) return;
 
@@ -80,5 +79,4 @@ tableBody.addEventListener('click', async (e) => {
   }
 });
 
-// Carregar parceiros ao abrir página
 fetchParceiros();
